@@ -1,0 +1,19 @@
+spring.application.name: spring-vault-demo
+spring.cloud.vault:
+    authentication: TOKEN
+    #token: ${VAULT_TOKEN}
+    token: hvs.14DpH9Ii4mMeL2tGFvIgzFnC
+    host: vault-server
+    port: 8200
+    scheme: http
+    fail-fast: true
+    config.lifecycle.enabled: true
+    generic:
+      enabled: true
+      backend: secret
+    database:
+        enabled: true
+        role: order
+        backend: database
+spring.datasource:
+  url: jdbc:postgresql://localhost:5432/postgres

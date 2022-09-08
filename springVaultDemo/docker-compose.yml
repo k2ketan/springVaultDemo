@@ -1,0 +1,61 @@
+version: "3.8"
+services:
+  vault-server:
+    image: vault:latest
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_ADDR: "http://0.0.0.0:8200"
+      VAULT_API_ADDR: "http://0.0.0.0:8200"	
+      VAULT_DEV_ROOT_TOKEN_ID: "vault-plaintext-root-token"
+    volumes:
+      - ./volumes/logs:/vault/logs
+      - ./volumes/file:/vault/file
+      - ./volumes/config:/vault/config
+    cap_add:
+      - IPC_LOCK
+    entrypoint: vault server -config=/vault/config/vault.json
+    networks:
+      vault-network:
+        ipv4_address: 172.21.0.10
+        aliases:
+          - vault-server
+
+  spring-vault:
+    image: spring-vault:latest
+    ports:
+      - "8080:8080"
+    environment:	
+      VAULT.TOKEN: "hvs.14DpH9Ii4mMeL2tGFvIgzFnC"
+      #spring.cloud.vault.token: "hvs.14DpH9Ii4mMeL2tGFvIgzFnC"
+    networks:
+      vault-network:
+        ipv4_address: 172.21.0.11
+        aliases:
+          - spring-vault
+  
+  postgres:
+    image: postgres:10.5
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5432:5432'
+    volumes: 
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      vault-network:
+        ipv4_address: 172.21.0.12
+        aliases:
+          - postgres
+          
+networks:
+  vault-network:
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
